@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ActiveLife</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700;900&family=Noto+Sans:wght@400;500;700;900&display=swap">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+</head>
+<body class="page-index">
+  <div class="relative flex size-full min-h-screen flex-col bg-gray-50 group/design-root overflow-x-hidden" style="font-family: Lexend, 'Noto Sans', sans-serif;">
+    <div class="layout-container flex h-full grow flex-col">
+      <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#eaeef1] px-10 py-3">
+        <div class="flex items-center gap-4 text-[#101518]">
+          <div class="size-4">
+            <!-- SVG aquí -->
+          </div>
+          <h2 class="text-[#101518] text-xl font-bold leading-tight tracking-[-0.015em]">ActiveLife</h2>
+        </div>
+        <div class="flex flex-1 justify-end gap-8">
+          <div class="flex items-center gap-9">
+            <a class="text-[#101518] text-lg font-medium leading-normal" href="index.html">Inicio</a>
+            <a class="text-[#101518] text-lg font-medium leading-normal" href="registro-actividad.html">Actividades</a>
+            <a class="text-[#101518] text-lg font-medium leading-normal" href="progreso.html">Progreso</a>
+            <a class="text-[#101518] text-lg font-medium leading-normal opacity-50 cursor-not-allowed" href="#">Comunidad</a>
+          </div>
+          <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12"
+            style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBwV9-woKniidQH80L2fuHj0-xsqapYa4T31P3WilrGhzsTPOxYR-fpDV6FBTkcQyXHEqkRWmxGrvnK-Zm1Yw0TtdVp8eeD9VTK368fdK4h0Yyx8uFRZHfnBC1JfVz7uenvWXV9ax0gY2ltuN_rcE3PkT8wYdUZQqkAx8h_mm7Gq5qKK6Q7WLfVH9e68U4W_ueU52X5GlFyvXEdOlldF5QQ4LYMC1oUlFLAo3xLElJGqZ32TNZDRN4jsJRTPbhV9nSUHLnmrXDx_NzK');">
+          </div>
+        </div>
+      </header>
+      <div class="px-4 sm:px-40 flex flex-1 justify-center py-5">
+        <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
+          <h2 class="text-[#101518] tracking-tight text-3xl font-bold leading-tight px-4 text-left pb-3 pt-5">¡Hola Jos&eacute;-Pepe-Pepo-Pepito-Papuchiiii-Colegui!!</h2>
+          <p id="mensajeMotivador" class="text-[#101518] text-lg font-normal leading-normal pb-3 pt-1 px-4">
+            Cargando mensaje motivador...
+          </p>
+          <div class="flex flex-col gap-3 p-4">
+            <div class="flex gap-6 justify-between">
+              <p class="text-[#101518] text-lg font-medium leading-normal">Actividad de hoy</p>
+            </div>
+            <div class="rounded bg-[#d4dde2]">
+              <div id="barraProgreso" class="h-4 rounded bg-[#b2d1e5]" style="width: 0%;"></div>
+            </div>
+            <p id="porcentajeCompletado" class="text-[#101518] text-lg font-normal leading-normal">0% completado</p>
+            <div class="flex px-4 py-3 justify-start">
+              <button id="btnRegistrarActividad"
+                class="flex min-w-[120px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-5 bg-[#b2d1e5] text-[#101518] text-lg font-bold leading-normal tracking-[0.015em]">
+                <span class="truncate">Registrar Actividad</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </div>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ActiveLife - Registrar Actividad</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;700;900&family=Noto+Sans:wght@400;500;700;900&display=swap">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+</head>
+<body class="page-registro">
+  <div class="relative flex size-full min-h-screen flex-col bg-slate-50 group/design-root overflow-x-hidden" style="font-family: Lexend, 'Noto Sans', sans-serif;">
+    <div class="layout-container flex h-full grow flex-col">
+      <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e7eef3] px-10 py-3">
+        <div class="flex items-center gap-4 text-[#101518]">
+          <div class="size-4">
+            <!-- SVG aquí -->
+          </div>
+          <h2 class="text-[#101518] text-xl font-bold leading-tight tracking-[-0.015em]">ActiveLife</h2>
+        </div>
+        <div class="flex flex-1 justify-end gap-8">
+          <div class="flex items-center gap-9">
+            <a class="text-[#101518] text-lg font-medium leading-normal" href="index.html">Inicio</a>
+            <a class="text-[#101518] text-lg font-medium leading-normal" href="registro-actividad.html">Actividades</a>
+            <a class="text-[#101518] text-lg font-medium leading-normal" href="progreso.html">Progreso</a>
+            <a class="text-[#101518] text-lg font-medium leading-normal opacity-50 cursor-not-allowed" href="#">Comunidad</a>
+          </div>
+          <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12"
+            style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDi5RTdmzRbFCtTHv-KdpBTICPKOAf0duoakoSjAhwWbJOdrjHRLIMPuPYtCewzZeBJnBODFzVGUa_3aUMWaW2XxLEK4KDGhQ1iQvCYpdjv6bpJnmoCbpPOkW1s4IpSC37Q9vQnLRi5r6U4VeUsaQvV38JWBA6r2UGUeKNIXo87VCbSeZfmB1ntSPle7436s-K9rurgzH-iF8XDBpVn9K7NCKf7fuWqVk1FkON622V9hywzxN3dxTQ6tQH1uzwsOmceElQCzh_wpQwb');">
+          </div>
+        </div>
+      </header>
+      <div class="px-4 sm:px-40 flex flex-1 justify-center py-5">
+        <div class="layout-content-container flex flex-col w-[512px] max-w-[512px] py-5 max-w-[960px] flex-1">
+          <h2 class="text-[#101518] tracking-tight text-3xl font-bold leading-tight px-4 text-left pb-3 pt-5">¿Qué actividad física has realizado hoy, José?</h2>
+          <form id="formRegistroActividad">
+            <div class="flex flex-col gap-3 p-4">
+              <label class="flex items-center gap-4 rounded-xl border border-solid border-[#d0dee7] p-[15px]">
+                <input type="radio" value="Caminata suave" class="h-6 w-6 border-2 border-[#d0dee7] bg-transparent text-transparent checked:border-[#1993e5] checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-2 focus:ring-[#1993e5] focus:ring-offset-2 checked:focus:border-[#1993e5]" name="selectedActivity" checked aria-label="Caminata suave" />
+                <div class="flex grow flex-col">
+                  <p class="text-[#101518] text-lg font-medium leading-normal">Caminata suave (en casa o exterior)</p>
+                  <p class="text-[#101518] text-base font-normal leading-normal">Caminar a paso lento, dentro de casa o en un parque cercano.</p>
+                </div>
+              </label>
+              <label class="flex items-center gap-4 rounded-xl border border-solid border-[#d0dee7] p-[15px]">
+                <input type="radio" value="Estiramientos" class="h-6 w-6 border-2 border-[#d0dee7] bg-transparent text-transparent checked:border-[#1993e5] checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-2 focus:ring-[#1993e5] focus:ring-offset-2 checked:focus:border-[#1993e5]" name="selectedActivity" aria-label="Estiramientos" />
+                <div class="flex grow flex-col">
+                  <p class="text-[#101518] text-lg font-medium leading-normal">Estiramientos</p>
+                  <p class="text-[#101518] text-base font-normal leading-normal">Estiramientos suaves para mejorar la flexibilidad y reducir la rigidez.</p>
+                </div>
+              </label>
+              <label class="flex items-center gap-4 rounded-xl border border-solid border-[#d0dee7] p-[15px]">
+                <input type="radio" value="Ejercicios de Equilibrio" class="h-6 w-6 border-2 border-[#d0dee7] bg-transparent text-transparent checked:border-[#1993e5] checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-2 focus:ring-[#1993e5] focus:ring-offset-2 checked:focus:border-[#1993e5]" name="selectedActivity" aria-label="Ejercicios de equilibrio" />
+                <div class="flex grow flex-col">
+                  <p class="text-[#101518] text-lg font-medium leading-normal">Ejercicios de equilibrio (sentado)</p>
+                  <p class="text-[#101518] text-base font-normal leading-normal">Ejercicios para mejorar el equilibrio, realizados en una silla.</p>
+                </div>
+              </label>
+              <label class="flex items-center gap-4 rounded-xl border border-solid border-[#d0dee7] p-[15px]">
+                <input type="radio" value="Levantamiento de pesas ligeras" class="h-6 w-6 border-2 border-[#d0dee7] bg-transparent text-transparent checked:border-[#1993e5] checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-2 focus:ring-[#1993e5] focus:ring-offset-2 checked:focus:border-[#1993e5]" name="selectedActivity" aria-label="Levantamiento de pesas ligeras" />
+                <div class="flex grow flex-col">
+                  <p class="text-[#101518] text-lg font-medium leading-normal">Levantamiento de pesas ligeras (sentado)</p>
+                  <p class="text-[#101518] text-base font-normal leading-normal">Levantar pesas ligeras mientras estás sentado para fortalecer los músculos.</p>
+                </div>
+              </label>
+            </div>
+            <div class="flex max-w-[480px] flex-wrap items-end gap-4 px-4 py-3">
+              <label class="flex flex-col min-w-40 flex-1">
+                <p class="text-[#101518] text-lg font-medium leading-normal pb-2">Duración (minutos)</p>
+                <input id="duracion" type="number" min="1" placeholder="Ej: 30" class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-[#101518] focus:outline-0 focus:ring-2 focus:ring-[#1993e5] border border-[#d0dee7] bg-slate-50 focus:border-[#1993e5] h-14 placeholder:text-[#101518] p-[15px] text-lg font-normal leading-normal" value="" aria-label="Duración de la actividad en minutos" />
+              </label>
+            </div>
+            <div class="@container">
+              <div class="relative flex w-full flex-col items-start justify-between gap-3 p-4 @[480px]:flex-row @[480px]:items-center">
+                <div class="flex w-full shrink-[3] items-center justify-between">
+                  <p class="text-[#101518] text-lg font-medium leading-normal">Esfuerzo percibido (1-5)</p>
+                  <p class="text-[#101518] text-base font-normal leading-normal @[480px]:hidden" id="esfuerzoValor">3</p>
+                </div>
+                <div class="flex h-4 w-full items-center gap-4">
+                  <input type="range" id="esfuerzoSlider" min="1" max="5" value="3" class="w-full h-2 bg-[#d0dee7] rounded-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1993e5] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#1993e5] [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#1993e5]" aria-label="Esfuerzo percibido de 1 a 5" />
+                  <p class="text-[#101518] text-base font-normal leading-normal hidden @[480px]:block" id="esfuerzoValor">3</p>
+                </div>
+              </div>
+            </div>
+            <div class="flex px-4 py-3 justify-end">
+              <button type="submit" id="btnGuardarActividad" class="flex min-w-[120px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-4 bg-[#1993e5] text-slate-50 text-lg font-bold leading-normal tracking-[0.015em]" aria-label="Guardar actividad">
+                <span class="truncate">Guardar Actividad</span>
+              </button>
+            </div>
+          </form>
+          <p class="text-[#101518] text-lg font-normal leading-normal pb-3 pt-1 px-4 text-center underline">
+            <a href="anadir-ejercicio.html" id="linkAnadirEditarEjercicios" aria-label="Ir a añadir o editar ejercicios">Añadir/Editar Ejercicios</a>
+          </p>
+        </div>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </div>
+</body>
+</html>
