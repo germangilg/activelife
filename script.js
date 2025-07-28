@@ -1,397 +1,95 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // --- Funciones de Utilidad ---
+// ...TU CÓDIGO ANTERIOR DE PROGRESO AQUÍ...
 
-    // Función para obtener los datos de localStorage de forma segura
-    function getData(key) {
-        try {
-            const data = localStorage.getItem(key);
-            return data ? JSON.parse(data) : [];
-        } catch (e) {
-            console.error('Error al leer de localStorage para', key, e);
-            return [];
-        }
-    }
+// CALENDARIO MODERNO DE ENTRENAMIENTOS
+function pintarCalendarioEntrenamientos() {
+    const calendarDays = document.getElementById('calendarDays');
+    const calMonthYear = document.getElementById('calMonthYear');
+    const prevMonth = document.getElementById('prevMonth');
+    const nextMonth = document.getElementById('nextMonth');
+    const modalResumenDia = document.getElementById('modalResumenDia');
+    const resumenFecha = document.getElementById('resumenFecha');
+    const resumenInfo = document.getElementById('resumenInfo');
+    const btnCerrarResumen = document.getElementById('btnCerrarResumen');
 
-    // Función para guardar datos en localStorage
-    function saveData(key, data) {
-        try {
-            localStorage.setItem(key, JSON.stringify(data));
-        } catch (e) {
-            console.error('Error al guardar en localStorage para', key, e);
-        }
-    }
+    if (!calendarDays) return;
 
-    // --- Navegación ---
-    function navigateTo(pageUrl) {
-        window.location.href = pageUrl;
-    }
+    let today = new Date();
+    let mes = today.getMonth();
+    let anio = today.getFullYear();
 
-    // Event listeners para la navegación de la cabecera
-    document.querySelectorAll('header a').forEach(link => {
-        link.addEventListener('click', function(event) {
-            event.preventDefault();
-            const text = this.textContent.trim();
-            if (text === 'Inicio') {
-                navigateTo('index.html');
-            } else if (text === 'Actividades') {
-                navigateTo('registro-actividad.html');
-            } else if (text === 'Progreso') {
-                navigateTo('progreso.html');
-            } else if (text === 'Comunidad') {
-                alert('La sección de Comunidad está en desarrollo.');
-            }
+    // Permitir navegación de meses
+    prevMonth.onclick = () => { mes--; if(mes < 0){ mes=11; anio--; } renderCalendar(); };
+    nextMonth.onclick = () => { mes++; if(mes > 11){ mes=0; anio++; } renderCalendar(); };
+    if(btnCerrarResumen) btnCerrarResumen.onclick = () => { modalResumenDia.classList.add('hidden'); };
+
+    function renderCalendar() {
+        calendarDays.innerHTML = '';
+        let actividades = getData('actividades');
+        // Marcar días con actividad
+        let actividadesPorFecha = {};
+        actividades.forEach(a => {
+            if (!actividadesPorFecha[a.fecha]) actividadesPorFecha[a.fecha] = [];
+            actividadesPorFecha[a.fecha].push(a);
         });
-    });
 
-    // --- Lógica Específica por Página ---
+        let primerDiaMes = new Date(anio, mes, 1);
+        let primerDiaSemana = (primerDiaMes.getDay() + 6) % 7; // hace que lunes sea 0
+        let diasEnMes = new Date(anio, mes + 1, 0).getDate();
 
-    // Lógica para index.html
-    if (document.body.classList.contains('page-index')) {
-        const btnRegistrarActividad = document.getElementById('btnRegistrarActividad');
-        const mensajeMotivadorElem = document.getElementById('mensajeMotivador');
-        const barraProgresoElem = document.getElementById('barraProgreso');
-        const porcentajeCompletadoElem = document.getElementById('porcentajeCompletado');
+        calMonthYear.textContent = primerDiaMes.toLocaleString('es-ES', { month: 'long', year: 'numeric' }).replace(/^./, str => str.toUpperCase());
 
-        if (btnRegistrarActividad) {
-            btnRegistrarActividad.addEventListener('click', function() {
-                navigateTo('registro-actividad.html');
-            });
+        // Dias vacíos inicio
+        for (let i = 0; i < primerDiaSemana; i++) {
+            const empty = document.createElement('div');
+            calendarDays.appendChild(empty);
         }
 
-        function actualizarDatosIndex() {
-            const actividades = getData('actividades');
-            const hoy = new Date().toISOString().slice(0, 10);
-            const actividadesHoy = actividades.filter(a => a.fecha === hoy);
-            const totalDuracionHoy = actividadesHoy.reduce((sum, a) => sum + parseInt(a.duracion || 0), 0);
-
-            const metaDiaria = 30;
-            let porcentaje = (totalDuracionHoy / metaDiaria) * 100;
-            if (porcentaje > 100) porcentaje = 100;
-
-            if (barraProgresoElem) {
-                barraProgresoElem.style.width = `${porcentaje}%`;
+        // Días del mes
+        for (let dia = 1; dia <= diasEnMes; dia++) {
+            const fecha = new Date(anio, mes, dia);
+            const fechaISO = fecha.toISOString().slice(0,10);
+            const divDia = document.createElement('div');
+            divDia.className =
+              "relative flex items-center justify-center aspect-square rounded-xl text-[#101518] font-bold cursor-pointer transition-all duration-200 select-none hover:bg-[#eaeef1]";
+            divDia.textContent = dia;
+            // Marcar hoy
+            if (
+              fecha.getDate() === today.getDate() &&
+              fecha.getMonth() === today.getMonth() &&
+              fecha.getFullYear() === today.getFullYear()
+            ) {
+                divDia.classList.add("ring-2", "ring-[#1993e5]");
             }
-            if (porcentajeCompletadoElem) {
-                porcentajeCompletadoElem.textContent = `${Math.round(porcentaje)}% completado (${totalDuracionHoy} de ${metaDiaria} minutos)`;
+            // Marcar días con entrenamiento
+            if (actividadesPorFecha[fechaISO]) {
+                divDia.classList.add("bg-[#1993e5]", "text-white", "hover:bg-[#3ea6f6]");
+                divDia.title = "Entrenamientos: " + actividadesPorFecha[fechaISO].length;
+                divDia.onclick = () => {
+                    mostrarResumenDia(fechaISO, actividadesPorFecha[fechaISO]);
+                };
+                // Circulito indicador
+                const punto = document.createElement("span");
+                punto.className = "absolute bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#FFD600] rounded-full";
+                divDia.appendChild(punto);
             }
-
-            const mensajes = [
-                "¡Sigue así, José! Cada paso cuenta.",
-                "¡Tu esfuerzo de hoy te acerca a tus metas!",
-                "¡Recuerda, la constancia es clave!",
-                "¡Vamos, José! ¡Tú puedes lograrlo!",
-                "¡Pequeños esfuerzos diarios hacen una gran diferencia!"
-            ];
-            if (mensajeMotivadorElem) {
-                if (totalDuracionHoy >= metaDiaria) {
-                    mensajeMotivadorElem.textContent = "¡Felicidades, José! ¡Has completado tu actividad diaria!";
-                    mensajeMotivadorElem.classList.add('text-green-700', 'font-bold');
-                } else {
-                    mensajeMotivadorElem.textContent = mensajes[Math.floor(Math.random() * mensajes.length)];
-                    mensajeMotivadorElem.classList.remove('text-green-700', 'font-bold');
-                }
-            }
-        }
-        actualizarDatosIndex();
-    }
-
-    // Lógica para registro-actividad.html
-    if (document.body.classList.contains('page-registro')) {
-        const formRegistro = document.getElementById('formRegistroActividad');
-        const esfuerzoSlider = document.getElementById('esfuerzoSlider');
-        const esfuerzoValor = document.getElementById('esfuerzoValor');
-        const linkAnadirEditarEjercicios = document.getElementById('linkAnadirEditarEjercicios');
-
-        if (esfuerzoSlider && esfuerzoValor) {
-            esfuerzoSlider.addEventListener('input', function() {
-                esfuerzoValor.textContent = this.value;
-            });
-            esfuerzoValor.textContent = esfuerzoSlider.value;
-        }
-
-        // Añadir ejercicios personalizados a las opciones de radio
-        const ejerciciosPersonalizados = getData('ejerciciosPersonalizados');
-        const radioContainer = document.querySelector('.flex.flex-col.gap-3.p-4');
-        if (radioContainer && ejerciciosPersonalizados.length > 0) {
-            ejerciciosPersonalizados.forEach(ej => {
-                const label = document.createElement('label');
-                label.className = 'flex items-center gap-4 rounded-xl border border-solid border-[#d0dee7] p-[15px]';
-                label.innerHTML = `
-                    <input type="radio" value="${ej.nombre}" class="h-6 w-6 border-2 border-[#d0dee7]" name="selectedActivity" aria-label="${ej.nombre}" />
-                    <div class="flex grow flex-col">
-                        <p class="text-[#101518] text-lg font-medium leading-normal">${ej.nombre}</p>
-                        <p class="text-[#101518] text-base font-normal leading-normal">${ej.descripcion}</p>
-                    </div>
-                `;
-                radioContainer.appendChild(label);
-            });
-        }
-
-        if (formRegistro) {
-            formRegistro.addEventListener('submit', function(event) {
-                event.preventDefault();
-                const selectedActivityRadio = document.querySelector('input[name="selectedActivity"]:checked');
-                const actividad = selectedActivityRadio ? selectedActivityRadio.value : '';
-                const duracion = document.getElementById('duracion').value;
-                const esfuerzo = esfuerzoSlider ? esfuerzoSlider.value : '3';
-                const fecha = new Date().toISOString().slice(0, 10);
-
-                if (!actividad) {
-                    alert('Por favor, selecciona un tipo de actividad.');
-                    return;
-                }
-                if (!duracion || isNaN(duracion) || parseInt(duracion) <= 0) {
-                    alert('Por favor, introduce una duración válida (número positivo).');
-                    return;
-                }
-
-                let actividades = getData('actividades');
-                actividades.push({ actividad, duracion: parseInt(duracion), esfuerzo: parseInt(esfuerzo), fecha });
-                saveData('actividades', actividades);
-
-                alert('¡Actividad guardada con éxito!');
-                navigateTo('index.html');
-            });
-        }
-
-        if (linkAnadirEditarEjercicios) {
-            linkAnadirEditarEjercicios.addEventListener('click', function(event) {
-                event.preventDefault();
-                navigateTo('anadir-ejercicio.html');
-            });
+            calendarDays.appendChild(divDia);
         }
     }
 
-    // Lógica para anadir-ejercicio.html
-    if (document.body.classList.contains('page-anadir-ejercicio')) {
-        const btnAnadirNuevoEjercicio = document.getElementById('btnAnadirNuevoEjercicio');
-        const listaEjerciciosContainer = document.getElementById('listaEjercicios');
-        const modalEjercicio = document.getElementById('modalEjercicio');
-        const modalTitle = document.getElementById('modalTitle');
-        const ejercicioNombreInput = document.getElementById('ejercicioNombre');
-        const ejercicioDescripcionInput = document.getElementById('ejercicioDescripcion');
-        const btnCancelarEjercicio = document.getElementById('btnCancelarEjercicio');
-        const btnGuardarEjercicio = document.getElementById('btnGuardarEjercicio');
-
-        let ejercicios = getData('ejerciciosPersonalizados');
-        let editandoIndex = -1;
-
-        function renderEjercicios() {
-            listaEjerciciosContainer.innerHTML = '';
-            if (ejercicios.length === 0) {
-                listaEjerciciosContainer.innerHTML = '<p class="text-[#101518] text-lg text-center mt-8">No hay ejercicios personalizados. ¡Añade uno!</p>';
-                return;
-            }
-
-            ejercicios.forEach((ej, index) => {
-                const div = document.createElement('div');
-                div.className = 'flex items-center gap-4 bg-gray-50 px-4 min-h-[72px] py-2 justify-between rounded-xl border border-solid border-[#eaeef1] mb-2';
-                div.innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <div class="text-[#101518] flex items-center justify-center rounded-lg bg-[#eaeef1] shrink-0 size-12">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
-                                <path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM128,216a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm40-88a8,8,0,0,1-8,8H136v32a8,8,0,0,1-16,0V136H96a8,8,0,0,1,0-16h32V88a8,8,0,0,1,16,0v32h24A8,8,0,0,1,168,128Z"></path>
-                            </svg>
-                        </div>
-                        <div class="flex flex-col justify-center">
-                            <p class="text-[#101518] text-lg font-medium leading-normal line-clamp-1">${ej.nombre}</p>
-                            <p class="text-[#101518] text-base font-normal leading-normal line-clamp-2">${ej.descripcion}</p>
-                        </div>
-                    </div>
-                    <div class="shrink-0 flex gap-2">
-                        <button class="btn-editar-ejercicio flex min-w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-[#eaeef1] text-[#101518] text-lg font-medium leading-normal" data-index="${index}" aria-label="Editar ejercicio ${ej.nombre}">
-                            <span class="truncate">Editar</span>
-                        </button>
-                        <button class="btn-eliminar-ejercicio flex min-w-[100px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-red-100 text-red-700 text-lg font-medium leading-normal" data-index="${index}" aria-label="Eliminar ejercicio ${ej.nombre}">
-                            <span class="truncate">Eliminar</span>
-                        </button>
-                    </div>
-                `;
-                listaEjerciciosContainer.appendChild(div);
-            });
-
-            document.querySelectorAll('.btn-editar-ejercicio').forEach(button => {
-                button.addEventListener('click', function() {
-                    editandoIndex = parseInt(this.dataset.index, 10);
-                    const ejercicioAEditar = ejercicios[editandoIndex];
-                    modalTitle.textContent = 'Editar Ejercicio';
-                    ejercicioNombreInput.value = ejercicioAEditar.nombre;
-                    ejercicioDescripcionInput.value = ejercicioAEditar.descripcion;
-                    modalEjercicio.classList.remove('hidden');
-                });
-            });
-
-            document.querySelectorAll('.btn-eliminar-ejercicio').forEach(button => {
-                button.addEventListener('click', function() {
-                    if (confirm('¿Estás seguro de que quieres eliminar este ejercicio?')) {
-                        const indexToDelete = parseInt(this.dataset.index, 10);
-                        ejercicios.splice(indexToDelete, 1);
-                        saveData('ejerciciosPersonalizados', ejercicios);
-                        renderEjercicios();
-                    }
-                });
-            });
-        }
-
-        if (btnAnadirNuevoEjercicio) {
-            btnAnadirNuevoEjercicio.addEventListener('click', function() {
-                editandoIndex = -1;
-                modalTitle.textContent = 'Añadir Nuevo Ejercicio';
-                ejercicioNombreInput.value = '';
-                ejercicioDescripcionInput.value = '';
-                modalEjercicio.classList.remove('hidden');
-            });
-        }
-
-        if (btnCancelarEjercicio) {
-            btnCancelarEjercicio.addEventListener('click', function() {
-                modalEjercicio.classList.add('hidden');
-            });
-        }
-
-        if (btnGuardarEjercicio) {
-            btnGuardarEjercicio.addEventListener('click', function() {
-                const nombre = ejercicioNombreInput.value.trim();
-                const descripcion = ejercicioDescripcionInput.value.trim();
-
-                if (!nombre) {
-                    alert('El nombre del ejercicio no puede estar vacío.');
-                    return;
-                }
-
-                if (editandoIndex === -1) {
-                    ejercicios.push({ nombre, descripcion });
-                } else {
-                    ejercicios[editandoIndex] = { nombre, descripcion };
-                }
-                saveData('ejerciciosPersonalizados', ejercicios);
-                renderEjercicios();
-                modalEjercicio.classList.add('hidden');
-            });
-        }
-        renderEjercicios();
+    function mostrarResumenDia(fechaISO, actividades) {
+        if (!modalResumenDia) return;
+        const fechaObj = new Date(fechaISO);
+        resumenFecha.textContent = fechaObj.toLocaleDateString('es-ES', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
+        let minutos = actividades.reduce((sum, a) => sum + a.duracion, 0);
+        let lista = actividades.map(a =>
+          `<li class="mb-1"><span class="font-semibold">${a.actividad}</span> - ${a.duracion} min. (esfuerzo ${a.esfuerzo})</li>`
+        ).join('');
+        resumenInfo.innerHTML =
+          `<p class="mb-2"><span class="font-bold text-[#1993e5]">${minutos}</span> minutos en total.</p>
+          <ul class="list-disc pl-5">${lista}</ul>`;
+        modalResumenDia.classList.remove('hidden');
     }
 
-    // Lógica para progreso.html
-    if (document.body.classList.contains('page-progreso')) {
-        const minutosSemanaElem = document.getElementById('minutosSemana');
-        const cambioSemanaElem = document.getElementById('cambioSemana');
-        const diasActivosConsecutivosElem = document.getElementById('diasActivosConsecutivos');
-        const cambioDiasElem = document.getElementById('cambioDias');
-        const totalMinutosElem = document.getElementById('totalMinutos');
-        const cambioTotalElem = document.getElementById('cambioTotal');
-        const logrosContainer = document.getElementById('logrosContainer');
-
-        function actualizarDatosProgreso() {
-            const actividades = getData('actividades');
-
-            const hoy = new Date();
-            const haceUnaSemana = new Date(hoy);
-            haceUnaSemana.setDate(hoy.getDate() - 7);
-            const haceDosSemanas = new Date(hoy);
-            haceDosSemanas.setDate(hoy.getDate() - 14);
-
-            const minutosEstaSemana = actividades.filter(act => {
-                const actDate = new Date(act.fecha);
-                return actDate >= haceUnaSemana && actDate <= hoy;
-            }).reduce((sum, act) => sum + parseInt(act.duracion || 0), 0);
-
-            const minutosSemanaAnterior = actividades.filter(act => {
-                const actDate = new Date(act.fecha);
-                return actDate >= haceDosSemanas && actDate < haceUnaSemana;
-            }).reduce((sum, act) => sum + parseInt(act.duracion || 0), 0);
-
-            if (minutosSemanaElem) minutosSemanaElem.textContent = minutosEstaSemana;
-            if (cambioSemanaElem) {
-                if (minutosSemanaAnterior > 0) {
-                    const porcentajeCambio = ((minutosEstaSemana - minutosSemanaAnterior) / minutosSemanaAnterior) * 100;
-                    cambioSemanaElem.textContent = `${porcentajeCambio >= 0 ? '+' : ''}${Math.round(porcentajeCambio)}%`;
-                    cambioSemanaElem.className = porcentajeCambio >= 0 ? 'text-[#078838] text-base font-medium leading-normal' : 'text-red-600 text-base font-medium leading-normal';
-                } else if (minutosEstaSemana > 0) {
-                    cambioSemanaElem.textContent = '+Nuevo';
-                    cambioSemanaElem.className = 'text-[#078838] text-base font-medium leading-normal';
-                } else {
-                    cambioSemanaElem.textContent = '';
-                }
-            }
-
-            // Días Activos Consecutivos
-            const fechasActividad = [...new Set(actividades.map(a => a.fecha))].sort((a, b) => new Date(b) - new Date(a));
-            let diasConsecutivos = 0;
-            if (fechasActividad.length > 0) {
-                let currentDay = new Date();
-                currentDay.setHours(0, 0, 0, 0);
-                for (let i = 0; i < fechasActividad.length; i++) {
-                    const activityDay = new Date(fechasActividad[i]);
-                    activityDay.setHours(0, 0, 0, 0);
-                    if (activityDay.getTime() === currentDay.getTime()) {
-                        diasConsecutivos++;
-                        currentDay.setDate(currentDay.getDate() - 1);
-                    } else {
-                        break;
-                    }
-                }
-            }
-            if (diasActivosConsecutivosElem) diasActivosConsecutivosElem.textContent = diasConsecutivos;
-            if (cambioDiasElem) cambioDiasElem.textContent = '';
-
-            // Total de Minutos de Ejercicio
-            const totalMinutosAcumulados = actividades.reduce((sum, act) => sum + parseInt(act.duracion || 0), 0);
-            if (totalMinutosElem) totalMinutosElem.textContent = totalMinutosAcumulados;
-            if (cambioTotalElem) {
-                if (actividades.length > 0) {
-                    const lastActivityDuration = actividades[actividades.length - 1].duracion;
-                    cambioTotalElem.textContent = `+${lastActivityDuration}`;
-                    cambioTotalElem.className = 'text-[#078838] text-base font-medium leading-normal';
-                } else {
-                    cambioTotalElem.textContent = '';
-                }
-            }
-
-            // Renderizar Logros
-            const logros = [
-                { id: 'logro7Dias', titulo: 'Primeros 7 Días Activos', minConsecutiveDays: 7, imagen: 'https://via.placeholder.com/150/FFD700/000000?text=7+Dias' },
-                { id: 'logro100Min', titulo: '100 Minutos de Ejercicio', minTotalMinutes: 100, imagen: 'https://via.placeholder.com/150/ADFF2F/000000?text=100+Min' },
-                { id: 'logro300Min', titulo: '300 Minutos de Ejercicio', minTotalMinutes: 300, imagen: 'https://via.placeholder.com/150/87CEEB/000000?text=300+Min' },
-                { id: 'logroMesActivo', titulo: 'Activo por un Mes', minTotalDaysInMonth: 20, imagen: 'https://via.placeholder.com/150/FFA500/000000?text=Mes+Activo' }
-            ];
-
-            logrosContainer.innerHTML = '';
-            let hasLogros = false;
-            logros.forEach(logro => {
-                let logrado = false;
-                if (logro.minConsecutiveDays && diasConsecutivos >= logro.minConsecutiveDays) {
-                    logrado = true;
-                }
-                if (logro.minTotalMinutes && totalMinutosAcumulados >= logro.minTotalMinutes) {
-                    logrado = true;
-                }
-                if (logro.minTotalDaysInMonth) {
-                    const fechasMesActual = actividades.filter(a => {
-                        const actDate = new Date(a.fecha);
-                        return actDate.getMonth() === hoy.getMonth() && actDate.getFullYear() === hoy.getFullYear();
-                    });
-                    const diasUnicosMes = [...new Set(fechasMesActual.map(a => a.fecha))].length;
-                    if (diasUnicosMes >= logro.minTotalDaysInMonth) {
-                        logrado = true;
-                    }
-                }
-
-                if (logrado) {
-                    hasLogros = true;
-                    const logroDiv = document.createElement('div');
-                    logroDiv.className = 'flex flex-col gap-3 pb-3';
-                    logroDiv.innerHTML = `
-                        <div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-xl" style='background-image: url("${logro.imagen}");'></div>
-                        <p class="text-[#101518] text-lg font-medium leading-normal">${logro.titulo}</p>
-                    `;
-                    logrosContainer.appendChild(logroDiv);
-                }
-            });
-            if (!hasLogros) {
-                logrosContainer.innerHTML = '<p class="text-[#101518] text-lg text-center mt-8">¡Sigue ejercitándote para desbloquear logros!</p>';
-            }
-        }
-        actualizarDatosProgreso();
-    }
-});
+    renderCalendar();
+}
+pintarCalendarioEntrenamientos();

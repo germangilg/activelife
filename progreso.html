@@ -61,6 +61,33 @@
           <div class="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
             <div id="logrosContainer" class="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4"></div>
           </div>
+
+          <!-- CALENDARIO MODERNO -->
+          <h2 class="text-[#101518] text-2xl font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Calendario de Entrenamientos</h2>
+          <div class="flex justify-center w-full">
+            <div class="bg-white rounded-xl shadow p-6 w-full max-w-xl">
+              <div class="flex items-center justify-between mb-2">
+                <button id="prevMonth" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-xl">&lt;</button>
+                <div id="calMonthYear" class="text-[#101518] font-bold text-lg"></div>
+                <button id="nextMonth" class="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-xl">&gt;</button>
+              </div>
+              <div class="grid grid-cols-7 text-center text-[#5c778a] font-semibold mb-1">
+                <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
+              </div>
+              <div id="calendarDays" class="grid grid-cols-7 gap-1"></div>
+            </div>
+          </div>
+          <!-- Modal resumen entrenamiento -->
+          <div id="modalResumenDia" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white p-6 rounded-xl shadow-lg w-[350px]">
+              <h3 class="text-[#101518] text-xl font-bold mb-4">Resumen de Entrenamiento</h3>
+              <p id="resumenFecha" class="text-[#1993e5] text-lg font-semibold mb-2"></p>
+              <div id="resumenInfo"></div>
+              <div class="flex justify-end mt-4">
+                <button id="btnCerrarResumen" class="bg-[#1993e5] text-white px-4 py-2 rounded-full text-lg font-bold">Cerrar</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <footer class="flex justify-center">
