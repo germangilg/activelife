@@ -3,39 +3,72 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- PROGRESO ---
     if (document.body.classList.contains('page-progreso')) {
-        let semanaOffset = 0; // 0 = semana actual, 1 = semana pasada, etc.
+        let periodoOffset = 0; // 0 = periodo actual, 1 = anterior, etc.
         const graficaProgreso = document.getElementById('graficaProgreso');
         const modoGrafica = document.getElementById('modoGrafica');
-        const btnSemanaAnterior = document.getElementById('btnSemanaAnterior');
-        const btnSemanaSiguiente = document.getElementById('btnSemanaSiguiente');
-        const etiquetaSemana = document.getElementById('etiquetaSemana');
+        const btnPeriodoAnterior = document.getElementById('btnPeriodoAnterior');
+        const btnPeriodoSiguiente = document.getElementById('btnPeriodoSiguiente');
+        const etiquetaPeriodo = document.getElementById('etiquetaPeriodo');
 
-        if (btnSemanaAnterior && btnSemanaSiguiente && etiquetaSemana && modoGrafica) {
-            btnSemanaAnterior.addEventListener('click', () => {
-                semanaOffset += 1;
+        if (btnPeriodoAnterior && btnPeriodoSiguiente && etiquetaPeriodo && modoGrafica) {
+            btnPeriodoAnterior.addEventListener('click', () => {
+                periodoOffset += 1;
                 actualizarDatosProgreso();
             });
-            btnSemanaSiguiente.addEventListener('click', () => {
-                if (semanaOffset > 0) {
-                    semanaOffset -= 1;
+            btnPeriodoSiguiente.addEventListener('click', () => {
+                if (periodoOffset > 0) {
+                    periodoOffset -= 1;
                     actualizarDatosProgreso();
                 }
             });
             modoGrafica.addEventListener('change', () => {
-                semanaOffset = 0;
+                periodoOffset = 0;
                 actualizarDatosProgreso();
             });
         }
 
-        function getLastNDaysLabels(n) {
+        // NUEVAS FUNCIONES: SIEMPRE DE LUNES A DOMINGO
+        function getWeekMonday(date) {
+            // Devuelve el lunes de la semana de la fecha dada
+            const day = date.getDay();
+            const diff = (day === 0 ? -6 : 1) - day;
+            const monday = new Date(date);
+            monday.setDate(date.getDate() + diff);
+            monday.setHours(0,0,0,0);
+            return monday;
+        }
+
+        function getNDaysLabelsMondayToSunday(offset) {
+            // offset: 0 = semana actual, 1 = anterior, etc.
             const labels = [];
             const today = new Date();
-            for (let i = n - 1; i >= 0; i--) {
-                const d = new Date(today);
-                d.setDate(today.getDate() - i);
+            today.setHours(0,0,0,0);
+            let monday = getWeekMonday(today);
+            monday.setDate(monday.getDate() - offset * 7);
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(monday);
+                d.setDate(monday.getDate() + i);
                 labels.push(d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' }));
             }
             return labels;
+        }
+
+        function getMinutosPorSemanaLunesADomingo(actividades, offset) {
+            const resultado = [];
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            let monday = getWeekMonday(today);
+            monday.setDate(monday.getDate() - offset * 7);
+            for (let i = 0; i < 7; i++) {
+                const dia = new Date(monday);
+                dia.setDate(monday.getDate() + i);
+                const fechaStr = dia.toISOString().slice(0, 10);
+                const minutos = actividades
+                  .filter(a => a.fecha === fechaStr)
+                  .reduce((sum, a) => sum + a.duracion, 0);
+                resultado.push(minutos);
+            }
+            return resultado;
         }
 
         function getLastNWeeksLabelsConOffset(n, offset) {
@@ -49,22 +82,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 labels.push(`Del ${start.getDate()}/${start.getMonth()+1} al ${end.getDate()}/${end.getMonth()+1}`);
             }
             return labels;
-        }
-
-        function getMinutosPorUltimosNDias(actividades, n) {
-            const hoy = new Date();
-            hoy.setHours(0,0,0,0);
-            const resultado = [];
-            for (let i = n - 1; i >= 0; i--) {
-                const dia = new Date(hoy);
-                dia.setDate(hoy.getDate() - i);
-                const fechaStr = dia.toISOString().slice(0, 10);
-                const minutos = actividades
-                  .filter(a => a.fecha === fechaStr)
-                  .reduce((sum, a) => sum + a.duracion, 0);
-                resultado.push(minutos);
-            }
-            return resultado;
         }
 
         function getMinutosPorUltimasNSemanasConOffset(actividades, n, offset) {
@@ -92,68 +109,63 @@ document.addEventListener('DOMContentLoaded', function() {
             graficaProgreso.innerHTML = '';
             let valores = [], etiquetas = [], maximo = 1;
             if (modo === 'dias') {
-                valores = getMinutosPorUltimosNDias(actividades, 7);
-                etiquetas = getLastNDaysLabels(7);
+                valores = getMinutosPorSemanaLunesADomingo(actividades, periodoOffset);
+                etiquetas = getNDaysLabelsMondayToSunday(periodoOffset);
                 maximo = Math.max(...valores, 30);
-                etiquetaSemana.textContent = '';
-                btnSemanaAnterior.classList.add('hidden');
-                btnSemanaSiguiente.classList.add('hidden');
+                // Etiqueta de periodo
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                let monday = getWeekMonday(today);
+                monday.setDate(monday.getDate() - periodoOffset * 7);
+                let sunday = new Date(monday);
+                sunday.setDate(monday.getDate() + 6);
+                etiquetaPeriodo.textContent = `(${monday.getDate()}/${monday.getMonth()+1} al ${sunday.getDate()}/${sunday.getMonth()+1})`;
+                btnPeriodoAnterior.classList.remove('hidden');
+                btnPeriodoSiguiente.classList.remove('hidden');
+                btnPeriodoSiguiente.disabled = periodoOffset === 0;
             } else {
-                valores = getMinutosPorUltimasNSemanasConOffset(actividades, 4, semanaOffset);
-                etiquetas = getLastNWeeksLabelsConOffset(4, semanaOffset);
+                valores = getMinutosPorUltimasNSemanasConOffset(actividades, 4, periodoOffset);
+                etiquetas = getLastNWeeksLabelsConOffset(4, periodoOffset);
                 maximo = Math.max(...valores, 100);
                 // Etiqueta rango de la semana principal
                 const hoy = new Date();
                 hoy.setHours(0,0,0,0);
                 const inicio = new Date(hoy);
-                inicio.setDate(hoy.getDate() - 7 * semanaOffset - 6);
+                inicio.setDate(hoy.getDate() - 7 * periodoOffset - 6);
                 const fin = new Date(hoy);
-                fin.setDate(hoy.getDate() - 7 * semanaOffset);
-                etiquetaSemana.textContent = `(${inicio.getDate()}/${inicio.getMonth()+1} al ${fin.getDate()}/${fin.getMonth()+1})`;
-                btnSemanaAnterior.classList.remove('hidden');
-                btnSemanaSiguiente.classList.remove('hidden');
-                btnSemanaSiguiente.disabled = semanaOffset === 0;
+                fin.setDate(hoy.getDate() - 7 * periodoOffset);
+                etiquetaPeriodo.textContent = `(${inicio.getDate()}/${inicio.getMonth()+1} al ${fin.getDate()}/${fin.getMonth()+1})`;
+                btnPeriodoAnterior.classList.remove('hidden');
+                btnPeriodoSiguiente.classList.remove('hidden');
+                btnPeriodoSiguiente.disabled = periodoOffset === 0;
             }
 
             for (let i = 0; i < valores.length; i++) {
                 const minutos = valores[i];
                 const label = etiquetas[i];
-
-                // Columna: etiqueta debajo, barra arriba, valor arriba de barra
                 const col = document.createElement('div');
                 col.className = 'flex flex-col-reverse items-center w-12';
-
-                // Etiqueta del día/semana
                 const labelEl = document.createElement('span');
                 labelEl.className = 'mt-1 text-xs font-bold text-[#101518] text-center';
                 labelEl.textContent = label;
                 col.appendChild(labelEl);
-
-                // Contenedor de barra y valor
                 const barraCont = document.createElement('div');
                 barraCont.className = 'relative flex flex-col items-center justify-end';
-                barraCont.style.height = '100px'; // altura máxima
-
-                // Barra
+                barraCont.style.height = '100px';
                 const bar = document.createElement('div');
                 bar.className = 'bg-[#1993e5] rounded-t-lg w-8 transition-all duration-500';
                 bar.style.height = `${(minutos / maximo) * 90}px`;
                 barraCont.appendChild(bar);
-
-                // Valor encima de la barra
                 const val = document.createElement('span');
                 val.className = 'mb-2 text-xs text-[#101518] font-bold absolute -top-6 left-1/2 -translate-x-1/2';
                 val.textContent = minutos;
                 barraCont.appendChild(val);
-
                 col.appendChild(barraCont);
                 graficaProgreso.appendChild(col);
             }
         }
 
-        // ... (el resto de la lógica de progreso: días consecutivos, total minutos, logros, calendario...)
-
-        // --- RESUMEN DE PROGRESO (como antes) ---
+        // --- RESUMEN DE PROGRESO Y CALENDARIO IGUAL QUE ANTES ---
         const diasActivosConsecutivosElem = document.getElementById('diasActivosConsecutivos');
         const cambioDiasElem = document.getElementById('cambioDias');
         const totalMinutosElem = document.getElementById('totalMinutos');
@@ -164,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const actividades = getData('actividades');
             renderGrafica(actividades, modoGrafica.value);
 
-            // Cálculo días consecutivos y total minutos
+            // ... el resto de la lógica igual ...
             const hoy = new Date();
             const fechasActividad = [...new Set(actividades.map(a => a.fecha))].sort();
             let diasConsecutivos = 0;
@@ -202,7 +214,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     cambioTotalElem.textContent = '';
                 }
             }
-            // Logros
             const logros = [
                 { id: 'logro7Dias', titulo: 'Primeros 7 Días Activos', minConsecutiveDays: 7, imagen: 'https://via.placeholder.com/150/FFD700/000000?text=7+Dias' },
                 { id: 'logro100Min', titulo: '100 Minutos de Ejercicio', minTotalMinutes: 100, imagen: 'https://via.placeholder.com/150/ADFF2F/000000?text=100+Min' },
@@ -234,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         actualizarDatosProgreso();
 
-        // --- CALENDARIO MODERNO ---
+        // ... calendario igual ...
         function pintarCalendarioEntrenamientos() {
             const calendarDays = document.getElementById('calendarDays');
             const calMonthYear = document.getElementById('calMonthYear');
@@ -313,7 +324,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ... (otras páginas)
-    // getData, saveData, navegación, etc. igual que antes
     function getData(key) {
         try {
             const data = localStorage.getItem(key);
