@@ -1,5 +1,22 @@
 document.addEventListener('DOMContentLoaded', function() {
 
+    // --- MENSAJE MOTIVADOR EN INDEX ---
+    if (document.body.classList.contains('page-index')) {
+        const mensajes = [
+            "¡Hoy es un gran día para avanzar hacia tus objetivos!",
+            "Recuerda: cada paso cuenta, ¡no te detengas!",
+            "Tu esfuerzo de hoy es el éxito de mañana.",
+            "¡Sigue así, lo estás haciendo genial!",
+            "Pequeños logros diarios crean grandes resultados.",
+            "La constancia es la clave, ¡ánimo!",
+            "¡Eres más fuerte de lo que crees!",
+            "No importa lo lento que vayas, lo importante es no parar."
+        ];
+        const mensaje = mensajes[Math.floor(Math.random() * mensajes.length)];
+        const motivador = document.getElementById("mensajeMotivador");
+        if(motivador) motivador.textContent = mensaje;
+    }
+
     // CABECERA RESPONSIVE
     const btnMenuMovil = document.getElementById('btnMenuMovil');
     const menuMovil = document.getElementById('menuMovil');
