@@ -10,22 +10,38 @@
 <body class="page-progreso">
   <div class="relative flex size-full min-h-screen flex-col bg-slate-50 group/design-root overflow-x-hidden" style="font-family: Lexend, 'Noto Sans', sans-serif;">
     <div class="layout-container flex h-full grow flex-col">
-      <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e7eef3] px-10 py-3">
+      <!-- CABECERA RESPONSIVE -->
+      <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#e7eef3] px-4 sm:px-10 py-3 relative">
         <div class="flex items-center gap-4 text-[#101518]">
           <div class="size-4"></div>
           <h2 class="text-[#101518] text-xl font-bold leading-tight tracking-[-0.015em]">ActiveLife</h2>
         </div>
-        <div class="flex flex-1 justify-end gap-8">
-          <div class="flex items-center gap-9">
-            <a class="text-[#101518] text-lg font-medium leading-normal" href="index.html">Inicio</a>
-            <a class="text-[#101518] text-lg font-medium leading-normal" href="registro-actividad.html">Actividades</a>
-            <a class="text-[#101518] text-lg font-medium leading-normal" href="progreso.html">Progreso</a>
-            <a class="text-[#101518] text-lg font-medium leading-normal opacity-50 cursor-not-allowed" href="#">Comunidad</a>
-          </div>
+        <!-- Menú escritorio -->
+        <nav class="hidden sm:flex flex-1 justify-end gap-8 items-center">
+          <a class="text-[#101518] text-lg font-medium leading-normal" href="index.html">Inicio</a>
+          <a class="text-[#101518] text-lg font-medium leading-normal" href="registro-actividad.html">Actividades</a>
+          <a class="text-[#101518] text-lg font-medium leading-normal" href="progreso.html">Progreso</a>
+          <a class="text-[#101518] text-lg font-medium leading-normal opacity-50 cursor-not-allowed" href="#">Comunidad</a>
           <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12"
             style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDKuuRVf7jIkIaakgNg8lHMI5oHV1HDV0gLvkAXxkE98uyWey2AYjJhT3XwMevdIolFhvMTFjTUbA7IimIq_FkqHXJXiaQZcVNLfXK-XqgRNFxYPXKkUmW3S6BGrAQrjF_w1GOLFYv4sOs6RV_Z4kvrgJBkJ36E92MljAN6SaDKCPgnUmAs3ank5kf7z3kEIH3ZGEHGrBMTQaenjbguxXCFdXqktnbpUQZm2d56BrOV-vGoOSrVjDNls95t2c3Qq8xWE-n_gRQ9Pimj');">
           </div>
-        </div>
+        </nav>
+        <!-- Botón menú móvil -->
+        <button id="btnMenuMovil" class="sm:hidden flex flex-col items-center justify-center size-10" aria-label="Abrir menú">
+          <span class="block w-7 h-1 bg-[#101518] mb-1 rounded"></span>
+          <span class="block w-7 h-1 bg-[#101518] mb-1 rounded"></span>
+          <span class="block w-7 h-1 bg-[#101518] rounded"></span>
+        </button>
+        <!-- Menú móvil oculto por defecto -->
+        <nav id="menuMovil" class="hidden absolute top-full right-0 bg-white shadow-lg rounded-b-lg w-48 py-2 z-50 flex-col items-end">
+          <a class="block px-6 py-2 text-[#101518] text-lg" href="index.html">Inicio</a>
+          <a class="block px-6 py-2 text-[#101518] text-lg" href="registro-actividad.html">Actividades</a>
+          <a class="block px-6 py-2 text-[#101518] text-lg" href="progreso.html">Progreso</a>
+          <span class="block px-6 py-2 text-[#101518] text-lg opacity-50 cursor-not-allowed">Comunidad</span>
+          <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 mx-6 my-2"
+            style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDKuuRVf7jIkIaakgNg8lHMI5oHV1HDV0gLvkAXxkE98uyWey2AYjJhT3XwMevdIolFhvMTFjTUbA7IimIq_FkqHXJXiaQZcVNLfXK-XqgRNFxYPXKkUmW3S6BGrAQrjF_w1GOLFYv4sOs6RV_Z4kvrgJBkJ36E92MljAN6SaDKCPgnUmAs3ank5kf7z3kEIH3ZGEHGrBMTQaenjbguxXCFdXqktnbpUQZm2d56BrOV-vGoOSrVjDNls95t2c3Qq8xWE-n_gRQ9Pimj');">
+          </div>
+        </nav>
       </header>
       <div class="px-4 sm:px-40 flex flex-1 justify-center py-5">
         <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
@@ -39,13 +55,14 @@
               <option value="semanas">Semanas</option>
               <option value="dias">Días</option>
             </select>
-            <button id="btnSemanaAnterior" class="ml-4 px-3 py-1 bg-[#eaeef1] rounded-lg text-[#101518] hover:bg-[#d0dee7] hidden">Semana anterior</button>
-            <button id="btnSemanaSiguiente" class="px-3 py-1 bg-[#eaeef1] rounded-lg text-[#101518] hover:bg-[#d0dee7] hidden">Siguiente semana</button>
-            <span id="etiquetaSemana" class="ml-3 text-[#1993e5] font-bold"></span>
+            <button id="btnPeriodoAnterior" class="ml-4 px-3 py-1 bg-[#eaeef1] rounded-lg text-[#101518] hover:bg-[#d0dee7]">Anterior</button>
+            <button id="btnPeriodoSiguiente" class="px-3 py-1 bg-[#eaeef1] rounded-lg text-[#101518] hover:bg-[#d0dee7]">Siguiente</button>
+            <span id="etiquetaPeriodo" class="ml-3 text-[#1993e5] font-bold"></span>
           </div>
           <!-- Gráfica dinámica -->
           <div id="graficaProgreso" class="flex gap-4 min-h-[120px] max-h-[180px] py-4"></div>
-
+          <!-- NUEVO: REPETICIONES EN LA GRÁFICA -->
+          <div id="graficaRepeticiones" class="flex gap-4 min-h-[40px] py-1"></div>
           <div class="flex flex-wrap gap-4 p-4">
             <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 bg-[#e7eef3]">
               <p class="text-[#101518] text-lg font-medium leading-normal">Días Activos Consecutivos</p>
@@ -56,6 +73,11 @@
               <p class="text-[#101518] text-lg font-medium leading-normal">Total de Minutos de Ejercicio</p>
               <p id="totalMinutos" class="text-[#101518] tracking-tight text-2xl font-bold leading-tight">0</p>
               <p id="cambioTotal" class="text-[#078838] text-base font-medium leading-normal"></p>
+            </div>
+            <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 bg-[#e7eef3]">
+              <p class="text-[#101518] text-lg font-medium leading-normal">Total de Repeticiones</p>
+              <p id="totalRepeticiones" class="text-[#101518] tracking-tight text-2xl font-bold leading-tight">0</p>
+              <p id="cambioReps" class="text-[#078838] text-base font-medium leading-normal"></p>
             </div>
           </div>
           <h2 class="text-[#101518] text-2xl font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Logros</h2>

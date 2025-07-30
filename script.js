@@ -1,14 +1,90 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // ... (otras páginas)
 
-    // --- PROGRESO ---
+    // CABECERA RESPONSIVE
+    const btnMenuMovil = document.getElementById('btnMenuMovil');
+    const menuMovil = document.getElementById('menuMovil');
+    if (btnMenuMovil && menuMovil) {
+      btnMenuMovil.addEventListener('click', () => {
+        menuMovil.classList.toggle('hidden');
+      });
+      // Cierra el menú móvil al hacer click fuera
+      document.addEventListener('click', function(e) {
+        if (!btnMenuMovil.contains(e.target) && !menuMovil.contains(e.target)) {
+          menuMovil.classList.add('hidden');
+        }
+      });
+    }
+
+    // --- Página registro-actividad.html ---
+    if (document.body.classList.contains('page-registro')) {
+        const formRegistro = document.getElementById('formRegistroActividad');
+        const esfuerzoSlider = document.getElementById('esfuerzoSlider');
+        const esfuerzoValor = document.querySelectorAll('#esfuerzoValor');
+        const linkAnadirEditarEjercicios = document.getElementById('linkAnadirEditarEjercicios');
+
+        if (esfuerzoSlider && esfuerzoValor) {
+            esfuerzoSlider.addEventListener('input', function() {
+                esfuerzoValor.forEach(elem => elem.textContent = this.value);
+            });
+        }
+
+        if (formRegistro) {
+            formRegistro.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const selectedActivityRadio = document.querySelector('input[name="selectedActivity"]:checked');
+                const actividad = selectedActivityRadio ? selectedActivityRadio.value : '';
+                const duracion = document.getElementById('duracion').value;
+                const repeticiones = document.getElementById('repeticiones').value || "0";
+                const esfuerzo = esfuerzoSlider ? esfuerzoSlider.value : '3';
+                const fecha = new Date().toISOString().slice(0, 10);
+
+                if (!actividad) {
+                    alert('Por favor, selecciona un tipo de actividad.');
+                    return;
+                }
+                if (isNaN(duracion) || parseInt(duracion) <= 0) {
+                    alert('Por favor, introduce una duración válida (número positivo).');
+                    return;
+                }
+                if (isNaN(repeticiones) || parseInt(repeticiones) < 0) {
+                    alert('Por favor, introduce un número de repeticiones válido (0 o más).');
+                    return;
+                }
+
+                let actividades = getData('actividades');
+                actividades.push({ 
+                  actividad: actividad, 
+                  duracion: parseInt(duracion), 
+                  repeticiones: parseInt(repeticiones), 
+                  esfuerzo: parseInt(esfuerzo), 
+                  fecha: fecha 
+                });
+                saveData('actividades', actividades);
+
+                alert('¡Actividad guardada con éxito!');
+                window.location.href = 'index.html';
+            });
+        }
+
+        if (linkAnadirEditarEjercicios) {
+            linkAnadirEditarEjercicios.addEventListener('click', function(event) {
+                event.preventDefault();
+                window.location.href = 'anadir-ejercicio.html';
+            });
+        }
+    }
+
+    // --- Página progreso.html ---
     if (document.body.classList.contains('page-progreso')) {
-        let periodoOffset = 0; // 0 = periodo actual, 1 = anterior, etc.
+        let periodoOffset = 0;
         const graficaProgreso = document.getElementById('graficaProgreso');
+        const graficaRepeticiones = document.getElementById('graficaRepeticiones');
         const modoGrafica = document.getElementById('modoGrafica');
         const btnPeriodoAnterior = document.getElementById('btnPeriodoAnterior');
         const btnPeriodoSiguiente = document.getElementById('btnPeriodoSiguiente');
         const etiquetaPeriodo = document.getElementById('etiquetaPeriodo');
+        const totalRepeticionesElem = document.getElementById('totalRepeticiones');
+        const cambioRepsElem = document.getElementById('cambioReps');
 
         if (btnPeriodoAnterior && btnPeriodoSiguiente && etiquetaPeriodo && modoGrafica) {
             btnPeriodoAnterior.addEventListener('click', () => {
@@ -27,9 +103,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // NUEVAS FUNCIONES: SIEMPRE DE LUNES A DOMINGO
+        // SIEMPRE DE LUNES A DOMINGO
         function getWeekMonday(date) {
-            // Devuelve el lunes de la semana de la fecha dada
             const day = date.getDay();
             const diff = (day === 0 ? -6 : 1) - day;
             const monday = new Date(date);
@@ -37,9 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
             monday.setHours(0,0,0,0);
             return monday;
         }
-
         function getNDaysLabelsMondayToSunday(offset) {
-            // offset: 0 = semana actual, 1 = anterior, etc.
             const labels = [];
             const today = new Date();
             today.setHours(0,0,0,0);
@@ -52,7 +125,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             return labels;
         }
-
         function getMinutosPorSemanaLunesADomingo(actividades, offset) {
             const resultado = [];
             const today = new Date();
@@ -65,8 +137,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 const fechaStr = dia.toISOString().slice(0, 10);
                 const minutos = actividades
                   .filter(a => a.fecha === fechaStr)
-                  .reduce((sum, a) => sum + a.duracion, 0);
+                  .reduce((sum, a) => sum + (a.duracion || 0), 0);
                 resultado.push(minutos);
+            }
+            return resultado;
+        }
+        function getRepsPorSemanaLunesADomingo(actividades, offset) {
+            const resultado = [];
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            let monday = getWeekMonday(today);
+            monday.setDate(monday.getDate() - offset * 7);
+            for (let i = 0; i < 7; i++) {
+                const dia = new Date(monday);
+                dia.setDate(monday.getDate() + i);
+                const fechaStr = dia.toISOString().slice(0, 10);
+                const reps = actividades
+                  .filter(a => a.fecha === fechaStr)
+                  .reduce((sum, a) => sum + (a.repeticiones || 0), 0);
+                resultado.push(reps);
             }
             return resultado;
         }
@@ -83,7 +172,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             return labels;
         }
-
         function getMinutosPorUltimasNSemanasConOffset(actividades, n, offset) {
             const hoy = new Date();
             hoy.setHours(0,0,0,0);
@@ -99,19 +187,44 @@ document.addEventListener('DOMContentLoaded', function() {
                       actDate.setHours(0,0,0,0);
                       return actDate >= inicio && actDate <= fin;
                   })
-                  .reduce((sum, a) => sum + a.duracion, 0);
+                  .reduce((sum, a) => sum + (a.duracion || 0), 0);
                 resultado.push(minutos);
+            }
+            return resultado;
+        }
+        function getRepsPorUltimasNSemanasConOffset(actividades, n, offset) {
+            const hoy = new Date();
+            hoy.setHours(0,0,0,0);
+            const resultado = [];
+            for (let i = n - 1; i >= 0; i--) {
+                const inicio = new Date(hoy);
+                inicio.setDate(hoy.getDate() - 7 * (i + offset));
+                const fin = new Date(inicio);
+                fin.setDate(inicio.getDate() + 6);
+                const reps = actividades
+                  .filter(a => {
+                      const actDate = new Date(a.fecha);
+                      actDate.setHours(0,0,0,0);
+                      return actDate >= inicio && actDate <= fin;
+                  })
+                  .reduce((sum, a) => sum + (a.repeticiones || 0), 0);
+                resultado.push(reps);
             }
             return resultado;
         }
 
         function renderGrafica(actividades, modo) {
             graficaProgreso.innerHTML = '';
+            graficaRepeticiones.innerHTML = '';
             let valores = [], etiquetas = [], maximo = 1;
+            let repeticionesValores = [];
+            let maxReps = 1;
             if (modo === 'dias') {
                 valores = getMinutosPorSemanaLunesADomingo(actividades, periodoOffset);
+                repeticionesValores = getRepsPorSemanaLunesADomingo(actividades, periodoOffset);
                 etiquetas = getNDaysLabelsMondayToSunday(periodoOffset);
                 maximo = Math.max(...valores, 30);
+                maxReps = Math.max(...repeticionesValores, 10);
                 // Etiqueta de periodo
                 const today = new Date();
                 today.setHours(0,0,0,0);
@@ -125,8 +238,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 btnPeriodoSiguiente.disabled = periodoOffset === 0;
             } else {
                 valores = getMinutosPorUltimasNSemanasConOffset(actividades, 4, periodoOffset);
+                repeticionesValores = getRepsPorUltimasNSemanasConOffset(actividades, 4, periodoOffset);
                 etiquetas = getLastNWeeksLabelsConOffset(4, periodoOffset);
                 maximo = Math.max(...valores, 100);
+                maxReps = Math.max(...repeticionesValores, 10);
                 // Etiqueta rango de la semana principal
                 const hoy = new Date();
                 hoy.setHours(0,0,0,0);
@@ -140,6 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 btnPeriodoSiguiente.disabled = periodoOffset === 0;
             }
 
+            // MINUTOS
             for (let i = 0; i < valores.length; i++) {
                 const minutos = valores[i];
                 const label = etiquetas[i];
@@ -163,9 +279,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 col.appendChild(barraCont);
                 graficaProgreso.appendChild(col);
             }
+            // REPETICIONES
+            for (let i = 0; i < repeticionesValores.length; i++) {
+                const reps = repeticionesValores[i];
+                const col = document.createElement('div');
+                col.className = 'flex flex-col-reverse items-center w-12';
+                // Solo muestra el número (no barra):
+                const val = document.createElement('span');
+                val.className = 'text-xs text-[#078838] font-bold text-center';
+                val.textContent = reps > 0 ? reps + " rep" : "";
+                col.appendChild(val);
+                graficaRepeticiones.appendChild(col);
+            }
         }
 
-        // --- RESUMEN DE PROGRESO Y CALENDARIO IGUAL QUE ANTES ---
+        // --- RESUMEN DE PROGRESO ---
         const diasActivosConsecutivosElem = document.getElementById('diasActivosConsecutivos');
         const cambioDiasElem = document.getElementById('cambioDias');
         const totalMinutosElem = document.getElementById('totalMinutos');
@@ -176,7 +304,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const actividades = getData('actividades');
             renderGrafica(actividades, modoGrafica.value);
 
-            // ... el resto de la lógica igual ...
+            // Días consecutivos, minutos y repeticiones totales
             const hoy = new Date();
             const fechasActividad = [...new Set(actividades.map(a => a.fecha))].sort();
             let diasConsecutivos = 0;
@@ -203,17 +331,29 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             if (diasActivosConsecutivosElem) diasActivosConsecutivosElem.textContent = diasConsecutivos;
             if (cambioDiasElem) cambioDiasElem.textContent = '';
-            const totalMinutosAcumulados = actividades.reduce((sum, act) => sum + act.duracion, 0);
+            const totalMinutosAcumulados = actividades.reduce((sum, act) => sum + (act.duracion || 0), 0);
             if (totalMinutosElem) totalMinutosElem.textContent = totalMinutosAcumulados;
             if (cambioTotalElem) {
                 if (actividades.length > 0) {
-                    const lastActivityDuration = actividades[actividades.length -1].duracion;
+                    const lastActivityDuration = actividades[actividades.length -1].duracion || 0;
                     cambioTotalElem.textContent = `+${lastActivityDuration}`;
                     cambioTotalElem.className = 'text-[#078838] text-base font-medium leading-normal';
                 } else {
                     cambioTotalElem.textContent = '';
                 }
             }
+            const totalRepeticiones = actividades.reduce((sum, act) => sum + (act.repeticiones || 0), 0);
+            if (totalRepeticionesElem) totalRepeticionesElem.textContent = totalRepeticiones;
+            if (cambioRepsElem) {
+                if (actividades.length > 0) {
+                    const lastActivityReps = actividades[actividades.length -1].repeticiones || 0;
+                    cambioRepsElem.textContent = lastActivityReps > 0 ? `+${lastActivityReps}` : '';
+                    cambioRepsElem.className = 'text-[#078838] text-base font-medium leading-normal';
+                } else {
+                    cambioRepsElem.textContent = '';
+                }
+            }
+            // Logros igual que antes...
             const logros = [
                 { id: 'logro7Dias', titulo: 'Primeros 7 Días Activos', minConsecutiveDays: 7, imagen: 'https://via.placeholder.com/150/FFD700/000000?text=7+Dias' },
                 { id: 'logro100Min', titulo: '100 Minutos de Ejercicio', minTotalMinutes: 100, imagen: 'https://via.placeholder.com/150/ADFF2F/000000?text=100+Min' },
@@ -245,7 +385,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         actualizarDatosProgreso();
 
-        // ... calendario igual ...
+        // --- CALENDARIO MODERNO ---
         function pintarCalendarioEntrenamientos() {
             const calendarDays = document.getElementById('calendarDays');
             const calMonthYear = document.getElementById('calMonthYear');
@@ -309,12 +449,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!modalResumenDia) return;
                 const fechaObj = new Date(fechaISO);
                 resumenFecha.textContent = fechaObj.toLocaleDateString('es-ES', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
-                let minutos = actividades.reduce((sum, a) => sum + a.duracion, 0);
+                let minutos = actividades.reduce((sum, a) => sum + (a.duracion || 0), 0);
+                let repeticiones = actividades.reduce((sum, a) => sum + (a.repeticiones || 0), 0);
                 let lista = actividades.map(a =>
-                  `<li class="mb-1"><span class="font-semibold">${a.actividad}</span> - ${a.duracion} min. (esfuerzo ${a.esfuerzo})</li>`
+                  `<li class="mb-1"><span class="font-semibold">${a.actividad}</span> - ${a.duracion} min. ${a.repeticiones ? `, ${a.repeticiones} reps` : ''} (esfuerzo ${a.esfuerzo})</li>`
                 ).join('');
                 resumenInfo.innerHTML =
                   `<p class="mb-2"><span class="font-bold text-[#1993e5]">${minutos}</span> minutos en total.</p>
+                   <p class="mb-2"><span class="font-bold text-[#078838]">${repeticiones}</span> repeticiones en total.</p>
                   <ul class="list-disc pl-5">${lista}</ul>`;
                 modalResumenDia.classList.remove('hidden');
             }
@@ -323,7 +465,7 @@ document.addEventListener('DOMContentLoaded', function() {
         pintarCalendarioEntrenamientos();
     }
 
-    // ... (otras páginas)
+    // --- Utilidades ---
     function getData(key) {
         try {
             const data = localStorage.getItem(key);
@@ -331,6 +473,13 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (e) {
             console.error('Error al leer de localStorage para', key, e);
             return [];
+        }
+    }
+    function saveData(key, data) {
+        try {
+            localStorage.setItem(key, JSON.stringify(data));
+        } catch (e) {
+            console.error('Error al guardar en localStorage para', key, e);
         }
     }
 });
